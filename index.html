@@ -10,6 +10,64 @@
             <div id="clearbox"><span id="clearButton">Clear board</span></div>
         </div>
 
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300');
+
+            html,
+            body {
+                background-color: #121316;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                height: 100%;
+                user-select: none;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+            }
+
+            :root {
+                --peg-size: 24px;
+            }
+
+            #board {
+                opacity: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+                width: 100%;
+            }
+
+            #actions {
+                display: flex;
+                opacity: 0;
+            }
+
+            #board .peg {
+                width: var(--peg-size);
+                height: var(--peg-size);
+                border: 1px solid rgba(255, 255, 255, .125);
+                border-radius: 50%;
+                margin: 3px;
+            }
+
+            #clearbox {
+                padding: 10px;
+            }
+
+            #clearButton {
+                cursor: pointer;
+                text-decoration: none;
+                color: white;
+                text-transform: lowercase;
+                font-family: 'Poppins', sans-serif;
+            }
+        </style>
+
         <script>
             document.oncontextmenu = () => false;
 
@@ -50,13 +108,24 @@
                 board.style.width = `${boardWidth}px`;
                 board.style.height = `${boardHeight}px`;
 
-                const pegSize = 38;
-                const NUM_PEGS = (
+                // Set peg size based on pixel density of device
+                let size = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--peg-size'));
+                if (devicePixelRatio > 1) {
+                    size = size * 1.5
+                }
+
+                document.documentElement.style.setProperty('--peg-size', `${size}px`);
+
+
+                // Account for spacing
+                const pegSize = size + 8;
+
+                const numPegs = (
                     Math.floor(boardWidth / pegSize) *
                     Math.floor(boardHeight / pegSize)
                 );
 
-                for (let i = 0; i < NUM_PEGS; i++) {
+                for (let i = 0; i < numPegs; i++) {
                     const div = document.createElement('div');
                     div.className = "peg";
                     board.appendChild(div);
@@ -209,59 +278,5 @@
                 [...pegs].map(clearPeg);
             }, { passive: false });
         </script>
-
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300');
-
-            html,
-            body {
-                background-color: #121316;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
-                height: 100%;
-                user-select: none;
-                -webkit-touch-callout: none;
-                -webkit-user-select: none;
-                -khtml-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-            }
-
-            #board {
-                opacity: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-wrap: wrap;
-                width: 100%;
-            }
-
-            #actions {
-                display: flex;
-                opacity: 0;
-            }
-
-            #board > div {
-                width: 30px;
-                height: 30px;
-                border: 1px solid rgba(255, 255, 255, .125);
-                border-radius: 50%;
-                margin: 3px;
-            }
-
-            #clearbox {
-                padding: 10px;
-            }
-
-            #clearButton {
-                cursor: pointer;
-                text-decoration: none;
-                color: white;
-                text-transform: lowercase;
-                font-family: 'Poppins', sans-serif;
-            }
-        </style>
     </body>
 </html>
