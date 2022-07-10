@@ -1,0 +1,204 @@
+<html>
+    <head>
+        <title>Lite-Brite</title>
+    </head>
+    <body>
+        <div id="board">
+            <!--divs will be inserted here-->
+        </div>
+        <div id="actions">
+            <div id="clearbox"><span id="clearButton">Clear board</span></div>
+        </div>
+
+        <script>
+            document.oncontextmenu = () => false;
+
+            function browserDimensions() {
+                return {
+                    width: window.innerWidth ,
+                    height: window.innerHeight
+                };
+            }
+
+            function hasClass(element, className) {
+                return [...element.classList].indexOf(className) !== -1;
+            }
+
+            function generateRandomColor() {
+                // https://css-tricks.com/snippets/javascript/random-hex-color/
+                const color = Math.floor(Math.random() * 16777215)
+                    .toString(16)
+                    .replace(/0|1|2|3/g, 'a')
+                    .replace(/4|5/g, '8')
+                    .replace(/6|8/g, 'f');
+
+                if (color.length != 6) {
+                    return generateRandomColor();
+                }
+
+                return color;
+            }
+
+            function createBoard() {
+                const board = document.getElementById('board');
+                const screen = browserDimensions();
+
+                const boardWidth = screen.width - 16;
+                const boardHeight = screen.height - 60;
+
+                // Prevent board relayout when window resizes
+                board.style.width = `${boardWidth}px`;
+                board.style.height = `${boardHeight}px`;
+
+                const pegSize = 28;
+                const NUM_PEGS = (
+                    Math.floor(boardWidth / pegSize) *
+                    Math.floor(boardHeight / pegSize)
+                );
+
+                for (let i = 0; i < NUM_PEGS; i++) {
+                    const div = document.createElement('div');
+                    div.className = "peg";
+                    board.appendChild(div);
+                }
+            }
+
+            function showBoard() {
+                const board = document.getElementById('board');
+                const actions = document.getElementById('actions');
+                fadeIn(board).then(() => {
+                    fadeIn(actions);
+                });
+            }
+
+            function fadeIn(element) {
+                return new Promise((resolve) => {
+                    var opacity = 0.05;
+                    var timer = setInterval(() => {
+                        if (opacity >= 1){
+                            clearInterval(timer);
+                            resolve();
+                        }
+                        element.style.opacity = opacity;
+                        element.style.filter = 'alpha(opacity=' + opacity * 100 + ")";
+                        opacity += opacity * 0.05;
+                    }, 8);
+                });
+            }
+
+            function colorPeg(peg) {
+                const color = generateRandomColor()
+                peg.style.transition = "background-color .2s ease, box-shadow .25s ease";
+                peg.style.backgroundColor = "#" + color;
+                peg.style.boxShadow = "0px 0px 24px #" + color;
+                peg.classList.add('on');
+            }
+
+            function clearPeg(peg) {
+                peg.style.transition = "background-color .5s ease, box-shadow .75s ease";
+                peg.style.backgroundColor = "transparent";
+                peg.style.boxShadow = "0px 0px 0px rgba(0,0,0,0)"
+                peg.classList.remove('on');
+            }
+
+            createBoard();
+            showBoard();
+
+            const pegs = document.querySelectorAll('div:not(#board):not(#clearbox)');
+            const clearButton = document.querySelector('#clearButton');
+
+            let leftMouseDown = false;
+            let rightMouseDown = false;
+
+            document.addEventListener("mousedown", (event) => {
+                if (event.button === 0) {
+                    leftMouseDown = true;
+                } else if (event.button === 2) {
+                    rightMouseDown = true;
+                }
+
+                if (hasClass(event.target, "peg")) {
+                    if (leftMouseDown) {
+                        colorPeg(event.target);
+                    } else if (rightMouseDown) {
+                        clearPeg(event.target);
+                    }
+                }
+            })
+
+            document.addEventListener("mouseup", (event) => {
+                if (event.button === 0) {
+                    leftMouseDown = false;
+                } else if (event.button === 2) {
+                    rightMouseDown = false;
+                }
+            })
+
+            // Allow coloring and clearing while dragging the mouse
+            document.addEventListener("mousemove", (event) => {
+                if (hasClass(event.target, "peg")) {
+                    if (leftMouseDown && !hasClass(event.target, 'on')) {
+                        // Color pegs that have not already been colored
+                        colorPeg(event.target);
+                    } else if (rightMouseDown) {
+                        clearPeg(event.target);
+                    }
+                }
+            });
+
+            // Reset all the pegs
+            clearButton.addEventListener("mouseup", (event) => {
+                [...pegs].map(clearPeg);
+            });
+        </script>
+
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300');
+
+            html,
+            body {
+                background-color: #121316;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            #board {
+                opacity: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+                width: 100%;
+                user-select: none;
+            }
+
+            #actions {
+                display: flex;
+                opacity: 0;
+            }
+
+            #board > div {
+                width: 20px;
+                height: 20px;
+                border: 1px solid rgba(255, 255, 255, .125);
+                border-radius: 50%;
+                margin: 3px;
+            }
+
+            #clearbox {
+                padding: 10px;
+            }
+
+            #clearButton {
+                cursor: pointer;
+                text-decoration: none;
+                color: white;
+                text-transform: lowercase;
+                font-family: 'Poppins', sans-serif;
+            }
+        </style>
+    </body>
+</html>
