@@ -50,7 +50,7 @@
                 board.style.width = `${boardWidth}px`;
                 board.style.height = `${boardHeight}px`;
 
-                const pegSize = 28;
+                const pegSize = 38;
                 const NUM_PEGS = (
                     Math.floor(boardWidth / pegSize) *
                     Math.floor(boardHeight / pegSize)
@@ -73,7 +73,7 @@
 
             function fadeIn(element) {
                 return new Promise((resolve) => {
-                    var opacity = 0.05;
+                    var opacity = 0.1;
                     var timer = setInterval(() => {
                         if (opacity >= 1){
                             clearInterval(timer);
@@ -81,8 +81,8 @@
                         }
                         element.style.opacity = opacity;
                         element.style.filter = 'alpha(opacity=' + opacity * 100 + ")";
-                        opacity += opacity * 0.05;
-                    }, 8);
+                        opacity += opacity * 0.1;
+                    }, 10);
                 });
             }
 
@@ -101,6 +101,12 @@
                 peg.classList.remove('on');
             }
 
+            function elementIsPeg(element) {
+                if (!element) return false;
+
+                return hasClass(element, "peg")
+            }
+
             createBoard();
             showBoard();
 
@@ -110,6 +116,9 @@
             let leftMouseDown = false;
             let rightMouseDown = false;
 
+            let touching = false;
+            let doubleTapped = false;
+
             document.addEventListener("mousedown", (event) => {
                 if (event.button === 0) {
                     leftMouseDown = true;
@@ -117,14 +126,14 @@
                     rightMouseDown = true;
                 }
 
-                if (hasClass(event.target, "peg")) {
+                if (elementIsPeg(event.target)) {
                     if (leftMouseDown) {
                         colorPeg(event.target);
                     } else if (rightMouseDown) {
                         clearPeg(event.target);
                     }
                 }
-            })
+            });
 
             document.addEventListener("mouseup", (event) => {
                 if (event.button === 0) {
@@ -132,11 +141,11 @@
                 } else if (event.button === 2) {
                     rightMouseDown = false;
                 }
-            })
+            });
 
             // Allow coloring and clearing while dragging the mouse
             document.addEventListener("mousemove", (event) => {
-                if (hasClass(event.target, "peg")) {
+                if (elementIsPeg(event.target)) {
                     if (leftMouseDown && !hasClass(event.target, 'on')) {
                         // Color pegs that have not already been colored
                         colorPeg(event.target);
@@ -146,10 +155,59 @@
                 }
             });
 
+            document.addEventListener("touchstart", (event) => {
+                event.preventDefault();
+
+                touching = true;
+                if (elementIsPeg(event.target)) {
+                    colorPeg(event.target);
+                }
+            }, { passive: false });
+
+            // Allow clearing peg via double tap on touch devices
+            document.addEventListener("touchstart", (event) => {
+                if (!doubleTapped) {
+                    doubleTapped = true;
+                    setTimeout(() => { doubleTapped = false}, 300);
+                    return false;
+                }
+
+                // prevent zoom
+                event.preventDefault();
+
+                if (elementIsPeg(event.target)) {
+                    clearPeg(event.target);
+                }
+            }, { passive: false });
+
+
+            document.addEventListener("touchend", (event) => {
+                event.preventDefault();
+                touching = false;
+            }, { passive: false });
+
+            document.addEventListener("touchmove", (event) => {
+                event.preventDefault();
+                const targetX = event.touches[0].pageX;
+                const targetY = event.touches[0].pageY;
+                const peg = document.elementFromPoint(targetX, targetY);
+                if (elementIsPeg(peg)) {
+                    if (touching && !hasClass(peg, 'on')) {
+                        // Color pegs that have not already been colored
+                        colorPeg(peg);
+                    }
+                }
+            }, { passive: false });
+
             // Reset all the pegs
             clearButton.addEventListener("mouseup", (event) => {
                 [...pegs].map(clearPeg);
             });
+
+            clearButton.addEventListener("touchend", (event) => {
+                event.preventDefault();
+                [...pegs].map(clearPeg);
+            }, { passive: false });
         </script>
 
         <style>
@@ -163,6 +221,12 @@
                 align-items: center;
                 flex-direction: column;
                 height: 100%;
+                user-select: none;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
             }
 
             #board {
@@ -172,7 +236,6 @@
                 align-items: center;
                 flex-wrap: wrap;
                 width: 100%;
-                user-select: none;
             }
 
             #actions {
@@ -181,8 +244,8 @@
             }
 
             #board > div {
-                width: 20px;
-                height: 20px;
+                width: 30px;
+                height: 30px;
                 border: 1px solid rgba(255, 255, 255, .125);
                 border-radius: 50%;
                 margin: 3px;
