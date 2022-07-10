@@ -109,10 +109,7 @@
                 board.style.height = `${boardHeight}px`;
 
                 // Set peg size based on pixel density of device
-                let size = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--peg-size'));
-                if (devicePixelRatio > 1) {
-                    size = size * 1.5
-                }
+                let size = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--peg-size')) * devicePixelRatio;
 
                 document.documentElement.style.setProperty('--peg-size', `${size}px`);
 
