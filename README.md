@@ -2,6 +2,8 @@
 
 It's Lite-Brite for your browser!
 
+Download `index.html` and open locally or play here: https://lite-brite-web.netlify.app/
+
 ## Controls
 **Left click/tap** to color a peg. **Click** again to change color.
 
